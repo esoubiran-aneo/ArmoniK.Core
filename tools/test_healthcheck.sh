@@ -8,6 +8,14 @@ fi
 
 SERVICE=$1
 
+tryhealthcheck() {
+  curl -sSL localhost:5011/liveness || true
+  curl -sSL localhost:5011/startup || true
+
+  curl -sSL localhost:9980/liveness || true
+  curl -sSL localhost:9980/startup || true
+  curl -sSL localhost:9980/readiness || true
+}
 healthcheck() {
   curl -fsSL localhost:5011/liveness
   curl -fsSL localhost:5011/startup
@@ -24,14 +32,14 @@ docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-com
 
 for i in $(seq 0 2);
 do
-  healthcheck || true
+  tryhealthcheck
   echo
   sleep 1
 done
 
 docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-activemqp.yml restart $SERVICE
 
-healthcheck || true
+tryhealthcheck
 sleep 1
 
 # If we restart the queue, wait for it to be active again
@@ -48,7 +56,7 @@ then
   done
 fi
 
-healthcheck || true
+tryhealthcheck
 
 sleep 1
 
@@ -60,7 +68,7 @@ docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-com
 for i in $(seq 0 2);
 do
   sleep 1
-  healthcheck || true
+  tryhealthcheck
   echo
 done
 
