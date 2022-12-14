@@ -464,6 +464,7 @@ internal class StreamWrapperTests
 
     var resultAvailability = taskRequestList.Select(request =>
                                                     {
+                                                      System.Threading.Thread.Sleep(2000);
                                                       var resultRequest = new ResultRequest
                                                                           {
                                                                             ResultId = request.ExpectedOutputKeys.Single(),
