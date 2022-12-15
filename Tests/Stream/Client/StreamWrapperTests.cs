@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Client.Options;
@@ -464,7 +465,7 @@ internal class StreamWrapperTests
 
     var resultAvailability = taskRequestList.Select(request =>
                                                     {
-                                                      System.Threading.Thread.Sleep(2000);
+                                                      Thread.Sleep(2000);
                                                       var resultRequest = new ResultRequest
                                                                           {
                                                                             ResultId = request.ExpectedOutputKeys.Single(),
