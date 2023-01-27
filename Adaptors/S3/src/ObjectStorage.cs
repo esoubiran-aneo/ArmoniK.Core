@@ -54,10 +54,7 @@ public class ObjectStorage : IObjectStorage
   /// <param name="objectStorageName">Name of the object storage used to differentiate them</param>
   /// <param name="options">S3 object storage options</param>
   /// <param name="logger">Logger used to print logs</param>
-  public ObjectStorage(AmazonS3Client         s3Client,
-                       string                 objectStorageName,
-                       Options.S3             options,
-                       ILogger<ObjectStorage> logger)
+  public ObjectStorage(AmazonS3Client s3Client, string objectStorageName, Options.S3 options, ILogger<ObjectStorage> logger)
   {
     s3Client_          = s3Client;
     objectStorageName_ = objectStorageName;
