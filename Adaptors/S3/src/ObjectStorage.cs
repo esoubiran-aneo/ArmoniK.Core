@@ -54,7 +54,10 @@ public class ObjectStorage : IObjectStorage
   /// <param name="objectStorageName">Name of the object storage used to differentiate them</param>
   /// <param name="options">S3 object storage options</param>
   /// <param name="logger">Logger used to print logs</param>
-  public ObjectStorage(AmazonS3Client s3Client, string objectStorageName, Options.S3 options, ILogger<ObjectStorage> logger)
+  public ObjectStorage(AmazonS3Client         s3Client,
+                       string                 objectStorageName,
+                       Options.S3             options,
+                       ILogger<ObjectStorage> logger)
   {
     s3Client_          = s3Client;
     objectStorageName_ = objectStorageName;
@@ -150,19 +153,23 @@ public class ObjectStorage : IObjectStorage
 
     if (value == null)
     {
-                                  throw new ObjectDataNotFoundException("Key not found");
+      throw new ObjectDataNotFoundException("Key not found");
     }
 
     var valuesCount = int.Parse(value!);
     var keyList = Enumerable.Range(0,
                                    valuesCount)
-                            .Select(index => new KeyVersion { Key = $"{objectStorageName_}{key}_{index}", }).Concat(new[]
-                                                                                                                    {
-                                                                                                                      new KeyVersion
-                                                                                                                      {
-                                                                                                                        Key = $"{objectStorageName_}{key}_count",
-                                                                                                                      },
-                                                                                                                    })
+                            .Select(index => new KeyVersion
+                                             {
+                                               Key = $"{objectStorageName_}{key}_{index}",
+                                             })
+                            .Concat(new[]
+                                    {
+                                      new KeyVersion
+                                      {
+                                        Key = $"{objectStorageName_}{key}_count",
+                                      },
+                                    })
                             .ToList();
     var multiObjectDeleteRequest = new DeleteObjectsRequest
                                    {
@@ -187,11 +194,12 @@ internal static class AmazonS3ClientExt
                                                                  string               key,
                                                                  ReadOnlyMemory<byte> chunk)
   {
-    var request = new PutObjectRequest {
-                                         BucketName  = bucketName,
-                                         Key         = key,
-                                         InputStream = chunk.AsStream(),
-                                       };
+    var request = new PutObjectRequest
+                  {
+                    BucketName  = bucketName,
+                    Key         = key,
+                    InputStream = chunk.AsStream(),
+                  };
     return await s3Client.PutObjectAsync(request);
   }
 
