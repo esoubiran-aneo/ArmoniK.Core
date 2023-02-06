@@ -21,6 +21,9 @@ resource "docker_container" "queue" {
     external = var.exposed_ports.admin_interface
   }
 
+  wait         = true
+  wait_timeout = 30
+
   healthcheck {
     test         = ["CMD-SHELL", "curl -f -u admin:admin -s http://localhost:8161/api/jolokia/exec/org.apache.activemq:type=Broker,brokerName=localhost,service=Health/healthStatus -H Origin:http://localhost | grep Good || exit 1 && echo $$?"]
     interval     = "10s"
