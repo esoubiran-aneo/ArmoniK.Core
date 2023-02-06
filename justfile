@@ -117,7 +117,7 @@ _usage:
 
 # Call terraform init
 init:
-  terraform -chdir=./terraform init
+  terraform -chdir=./terraform init -upgrade
 
 # Validate deployment
 validate:
