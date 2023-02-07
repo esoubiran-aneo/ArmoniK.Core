@@ -473,6 +473,7 @@ jobs:
       - name: Deploy Core
         uses: nick-fields/retry@v2
         with:
+          timeout_minutes: 2
           retry_on: error
           max_attempts: 2
           command: |
@@ -560,6 +561,7 @@ jobs:
       - name: Deploy Core
         uses: nick-fields/retry@v2
         with:
+          timeout_minutes: 2
           retry_on: error
           max_attempts: 2
           command: |
@@ -672,6 +674,7 @@ jobs:
       - name: Deploy Core
         uses: nick-fields/retry@v2
         with:
+          timeout_minutes: 2
           retry_on: error
           max_attempts: 2
           command: |
@@ -775,6 +778,7 @@ jobs:
       - name: Deploy Core
         uses: nick-fields/retry@v2
         with:
+          timeout_minutes: 2
           retry_on: error
           max_attempts: 2
           command: |
@@ -847,6 +851,7 @@ jobs:
       - name: Deploy Core
         uses: nick-fields/retry@v2
         with:
+          timeout_minutes: 2
           retry_on: error
           max_attempts: 2
           command: |
