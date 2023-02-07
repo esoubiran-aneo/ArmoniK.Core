@@ -89,12 +89,8 @@ public class Agent : IAgent
   public async Task FinalizeTaskCreation(CancellationToken cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(FinalizeTaskCreation),
-                                          ("taskId", taskData_.TaskId)!,
-                                          ("sessionId", sessionData_.SessionId)!);
-    if (createdTasks_ == null)
-    {
-      throw new ArmoniKException("Created tasks should not be null");
-    }
+                                          ("taskId", taskData_.TaskId),
+                                          ("sessionId", sessionData_.SessionId));
 
     logger_.LogDebug("Finalize child task creation");
 
@@ -103,8 +99,8 @@ public class Agent : IAgent
       await submitter_.FinalizeTaskCreation(createdTask.requests,
                                             createdTask.priority,
                                             taskData_.Options.PartitionId,
-                                            sessionData_.SessionId!,
-                                            taskData_.TaskId!,
+                                            sessionData_.SessionId,
+                                            taskData_.TaskId,
                                             cancellationToken)
                       .ConfigureAwait(false);
     }
@@ -122,8 +118,8 @@ public class Agent : IAgent
     currentTasks.requests = new List<Storage.TaskRequest>();
 
     using var _ = logger_.BeginNamedScope(nameof(CreateTask),
-                                          ("taskId", taskData_.TaskId)!,
-                                          ("sessionId", sessionData_.SessionId)!);
+                                          ("taskId", taskData_.TaskId),
+                                          ("sessionId", sessionData_.SessionId));
     await foreach (var request in requestStream.ReadAllAsync(cancellationToken)
                                                .ConfigureAwait(false))
     {
@@ -154,7 +150,7 @@ public class Agent : IAgent
           completionTask = Task.Run(async () =>
                                     {
                                       currentTasks = await submitter_.CreateTasks(sessionData_.SessionId,
-                                                                                  taskData_.TaskId!,
+                                                                                  taskData_.TaskId,
                                                                                   request.InitRequest.TaskOptions,
                                                                                   taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),
                                                                                   cancellationToken)
@@ -281,8 +277,8 @@ public class Agent : IAgent
                                   CancellationToken              cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(GetCommonData),
-                                          ("taskId", taskData_.TaskId)!,
-                                          ("sessionId", sessionData_.SessionId)!);
+                                          ("taskId", taskData_.TaskId),
+                                          ("sessionId", sessionData_.SessionId));
     if (string.IsNullOrEmpty(request.CommunicationToken))
     {
       await responseStream.WriteAsync(new DataReply
@@ -321,8 +317,8 @@ public class Agent : IAgent
                                   CancellationToken              cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(GetDirectData),
-                                          ("taskId", taskData_.TaskId)!,
-                                          ("sessionId", sessionData_.SessionId)!);
+                                          ("taskId", taskData_.TaskId),
+                                          ("sessionId", sessionData_.SessionId));
 
     if (string.IsNullOrEmpty(request.CommunicationToken))
     {
@@ -362,8 +358,8 @@ public class Agent : IAgent
                                     CancellationToken              cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(GetResourceData),
-                                          ("taskId", taskData_.TaskId)!,
-                                          ("sessionId", sessionData_.SessionId)!);
+                                          ("taskId", taskData_.TaskId),
+                                          ("sessionId", sessionData_.SessionId));
 
     if (string.IsNullOrEmpty(request.CommunicationToken))
     {
@@ -389,11 +385,32 @@ public class Agent : IAgent
       return;
     }
 
-    IAsyncEnumerable<byte[]> bytes;
     try
     {
-      bytes = resourcesStorage_.GetValuesAsync(request.Key,
-                                               cancellationToken);
+      await foreach (var data in resourcesStorage_.GetValuesAsync(request.Key,
+                                                                  cancellationToken)
+                                                  .ConfigureAwait(false))
+      {
+        await responseStream.WriteAsync(new DataReply
+                                        {
+                                          Data = new DataChunk
+                                                 {
+                                                   Data = UnsafeByteOperations.UnsafeWrap(data),
+                                                 },
+                                        },
+                                        cancellationToken)
+                            .ConfigureAwait(false);
+      }
+
+      await responseStream.WriteAsync(new DataReply
+                                      {
+                                        Data = new DataChunk
+                                               {
+                                                 DataComplete = true,
+                                               },
+                                      },
+                                      cancellationToken)
+                          .ConfigureAwait(false);
     }
     catch (ObjectDataNotFoundException)
     {
@@ -407,51 +424,7 @@ public class Agent : IAgent
                                       },
                                       cancellationToken)
                           .ConfigureAwait(false);
-      return;
     }
-
-    await responseStream.WriteAsync(new DataReply
-                                    {
-                                      Init = new DataReply.Types.Init
-                                             {
-                                               Key = request.Key,
-                                               Data = new DataChunk
-                                                      {
-                                                        Data = UnsafeByteOperations.UnsafeWrap(await bytes.FirstAsync(cancellationToken)
-                                                                                                          .ConfigureAwait(false)),
-                                                      },
-                                             },
-                                    },
-                                    cancellationToken)
-                        .ConfigureAwait(false);
-
-    await foreach (var data in bytes.Skip(1)
-                                    .ConfigureAwait(false))
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        Init = new DataReply.Types.Init
-                                               {
-                                                 Key = request.Key,
-                                                 Data = new DataChunk
-                                                        {
-                                                          Data = UnsafeByteOperations.UnsafeWrap(data),
-                                                        },
-                                               },
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-    }
-
-    await responseStream.WriteAsync(new DataReply
-                                    {
-                                      Data = new DataChunk
-                                             {
-                                               DataComplete = true,
-                                             },
-                                    },
-                                    cancellationToken)
-                        .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
@@ -459,8 +432,8 @@ public class Agent : IAgent
                                             CancellationToken          cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(SendResult),
-                                          ("taskId", taskData_.TaskId)!,
-                                          ("sessionId", sessionData_.SessionId)!);
+                                          ("taskId", taskData_.TaskId),
+                                          ("sessionId", sessionData_.SessionId));
 
     Task? completionTask = null;
     var   fsmResult      = new ProcessReplyResultStateMachine(logger_);
@@ -500,8 +473,8 @@ public class Agent : IAgent
               fsmResult.InitKey();
               completionTask = Task.Run(async () =>
                                         {
-                                          await submitter_.SetResult(sessionData_.SessionId!,
-                                                                     taskData_.TaskId!,
+                                          await submitter_.SetResult(sessionData_.SessionId,
+                                                                     taskData_.TaskId,
                                                                      request.Init.Key,
                                                                      chunksChannel.Reader.ReadAllAsync(cancellationToken),
                                                                      cancellationToken)
