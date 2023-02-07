@@ -472,7 +472,9 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
+          echo "Attempt 1" && just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy || \
+          echo "Attempt 2" && just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy || \
+          echo "Deployment failed" && exit 1
           sleep 10
 
       - name: Run Stream Test
@@ -555,7 +557,9 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} worker=htcmock deploy
+          echo "Attempt 1" && just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} worker=htcmock deploy || \
+          echo "Attempt 2" && just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} worker=htcmock deploy || \
+          echo "Deployment failed" || exit 1
           sleep 10
 
       - name: Run HtcMock test 100 tasks 1 level
@@ -663,7 +667,9 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy
+          echo "Attempt 1" && just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy || \
+          echo "Attempt 2" && just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy || \
+          echo "Deployment failed" || exit 1
           sleep 10
           ls -la terraform/logs/*.json
 
@@ -762,7 +768,9 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy
+          echo "Attempt 1" && just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy || \
+          echo "Attempt 2" && just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy || \
+          echo "Deployment failed" && exit 1
           sleep 10
           ls -la terraform/logs/*.json
 
@@ -830,7 +838,9 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just tag=${VERSION} object=redis deploy
+          echo "Attempt 1" && just tag=${VERSION} object=redis deploy) || \
+          echo "Attempt 2" && just tag=${VERSION} object=redis deploy || \
+          echo "Deployment failed" && exit 1
           sleep 10
           ls -la terraform/logs/*.json
 
