@@ -471,11 +471,13 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Deploy Core
-        run: |
-          echo "Attempt 1" && just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy || \
-          echo "Attempt 2" && just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy || \
-          echo "Deployment failed" && exit 1
-          sleep 10
+        uses: nick-fields/retry@v2
+        with:
+          retry_on: error
+          max_attempts: 2
+          command: |
+            just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
+            sleep 10
 
       - name: Run Stream Test
         timeout-minutes: 10
@@ -556,11 +558,13 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Deploy Core
-        run: |
-          echo "Attempt 1" && just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} worker=htcmock deploy || \
-          echo "Attempt 2" && just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} worker=htcmock deploy || \
-          echo "Deployment failed" || exit 1
-          sleep 10
+        uses: nick-fields/retry@v2
+        with:
+          retry_on: error
+          max_attempts: 2
+          command: |
+            just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} worker=htcmock deploy
+            sleep 10
 
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 10
@@ -666,12 +670,14 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Deploy Core
-        run: |
-          echo "Attempt 1" && just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy || \
-          echo "Attempt 2" && just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy || \
-          echo "Deployment failed" || exit 1
-          sleep 10
-          ls -la terraform/logs/*.json
+        uses: nick-fields/retry@v2
+        with:
+          retry_on: error
+          max_attempts: 2
+          command: |
+            just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy
+            sleep 10
+            ls -la terraform/logs/*.json
 
       - name: Run Bench test tasks - many tasks (200)
         timeout-minutes: 10
@@ -767,12 +773,14 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Deploy Core
-        run: |
-          echo "Attempt 1" && just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy || \
-          echo "Attempt 2" && just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy || \
-          echo "Deployment failed" && exit 1
-          sleep 10
-          ls -la terraform/logs/*.json
+        uses: nick-fields/retry@v2
+        with:
+          retry_on: error
+          max_attempts: 2
+          command: |
+            just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy
+            sleep 10
+            ls -la terraform/logs/*.json
 
       - name: Run HtcMock test
         timeout-minutes: 10
@@ -837,12 +845,14 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Deploy Core
-        run: |
-          echo "Attempt 1" && just tag=${VERSION} object=redis deploy) || \
-          echo "Attempt 2" && just tag=${VERSION} object=redis deploy || \
-          echo "Deployment failed" && exit 1
-          sleep 10
-          ls -la terraform/logs/*.json
+        uses: nick-fields/retry@v2
+        with:
+          retry_on: error
+          max_attempts: 2
+          command: |
+            just tag=${VERSION} object=redis deploy
+            sleep 10
+            ls -la terraform/logs/*.json
 
       - name: Run HtcMock test
         timeout-minutes: 10
