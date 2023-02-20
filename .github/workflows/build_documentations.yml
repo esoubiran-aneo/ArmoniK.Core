@@ -7,7 +7,7 @@ on:
       - doc_net7
 jobs:
   build:
-    runs-on: mcr.microsoft.com/dotnet/sdk:6.0
+    runs-on: ubuntu-20.04
 
     steps:
     - name: Checkout repo
@@ -19,12 +19,15 @@ jobs:
         sudo dpkg -i packages-microsoft-prod.deb
         rm packages-microsoft-prod.deb
         sudo apt-get update
-        sudo apt-get install -y dotnet-sdk-6.0 dotnet-runtime-6.0 
-        #sudo apt-get install -y dotnet-sdk-7.0 dotnet-runtime-7.0
-        sudo apt remove dotnet-sdk-7.0 dotnet-runtime-7.0
+        #sudo apt remove dotnet-sdk-7.0 dotnet-runtime-7.0
+        #sudo apt-get install -y dotnet-sdk-6.0 dotnet-runtime-6.0 
+        sudo apt-get install -y dotnet-sdk-7.0 dotnet-runtime-7.0
     - name: Get docfx
       run: |
         dotnet tool update -g docfx
+    - name: Install dependencies
+      run: |
+        dotnet restore
     - name: Build docs
       run:  |
         docfx Documentation/docfx.json build
