@@ -3,7 +3,7 @@ name: Build Documentation
 on:
   push:
     branches:
-      - main
+      - test_doc
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
         sudo dpkg -i packages-microsoft-prod.deb
         rm packages-microsoft-prod.deb
         sudo apt-get update
-        sudo apt-get install -y dotnet-sdk-7.0
+        sudo apt-get install -y dotnet-sdk-7.0 dotnet-runtime-7.0
     - name: Get docfx
       run: |
         dotnet tool update -g docfx
@@ -27,8 +27,8 @@ jobs:
       run:  |
         docfx Documentation/docfx.json build
 
-    - name: Deploy docfx documentation
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: Documentation/_site
+    # - name: Deploy docfx documentation
+    #   uses: peaceiris/actions-gh-pages@v3
+    #   with:
+    #     github_token: ${{ secrets.GITHUB_TOKEN }}
+    #     publish_dir: Documentation/_site
