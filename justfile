@@ -66,6 +66,7 @@ export ARMONIK_METRICS            := "dockerhubaneo/armonik_control_metrics:" + 
 export ARMONIK_PARTITIONMETRICS   := "dockerhubaneo/armonik_control_partition_metrics:" + tag
 export ARMONIK_SUBMITTER          := "dockerhubaneo/armonik_control:" + tag
 export ARMONIK_POLLINGAGENT       := "dockerhubaneo/armonik_pollingagent:" + tag
+export ARMONIK_DEPENDENCYCHECKER  := "dockerhubaneo/armonik_control_dependency_checker:" + tag
 
 # List recipes and their usage
 @default:
@@ -153,7 +154,7 @@ build $imageTag $dockerFile:
   docker build -t "$imageTag" -f "$dockerFile" ./
 
 # Build all images necessary for the deployment
-build-all: (build TF_VAR_worker_image + ":" + tag TF_VAR_worker_docker_file_path + "Dockerfile" ) (build ARMONIK_METRICS "./Control/Metrics/src/Dockerfile") (build ARMONIK_PARTITIONMETRICS "./Control/PartitionMetrics/src/Dockerfile") (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile") (build ARMONIK_POLLINGAGENT "./Compute/PollingAgent/src/Dockerfile")
+build-all: (build ARMONIK_DEPENDENCYCHECKER "./Control/DependencyChecker/src/Dockerfile") (build TF_VAR_worker_image + ":" + tag TF_VAR_worker_docker_file_path + "Dockerfile" ) (build ARMONIK_METRICS "./Control/Metrics/src/Dockerfile") (build ARMONIK_PARTITIONMETRICS "./Control/PartitionMetrics/src/Dockerfile") (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile") (build ARMONIK_POLLINGAGENT "./Compute/PollingAgent/src/Dockerfile")
 
 # Build and Deploy ArmoniK Core; this recipe should only be used with local_images=false
 build-deploy: build-all deploy
